@@ -8,7 +8,7 @@ let currentDay = dayOfWeek[dateObj.getDay()];
 let inputField = document.querySelector('input');
 let enterBtn = document.querySelector('.enter')
 let listContainer = document.querySelector('.list-container')
-let isPriority = false;
+// let isPriority = false;
 let priorityCount = 0;
 const priority = '#priority';
 let todoList = [];
@@ -21,98 +21,72 @@ dateContainer.innerText = `${currentDay} - ${currentMonth} ${date}`;
 
 inputField.oninput = inputCheck;
 
-function inputCheck() { 
-        
-    if(inputField.value !== ''){
-        enterBtn.src = './img/arrow-enabled.png';
-    }
-    else{
-        enterBtn.src = './img/arrow-disable.png';
-    }
+function inputCheck() {    
+    enterBtn.src = (inputField.value.trim() !== '') ?  './img/arrow-enabled.png' : './img/arrow-disable.png';
 }
 
-inputField.onkeydown = event => {
 
-    if(event.key === 'Enter' && inputField.value.trim() !== '') {
-        if(listContainer.childElementCount <= 10){
-            createItem(inputField.value);
-        }
+inputField.onkeydown = event => {
+    if(event.key === 'Enter' && inputField.value.trim() !== '' && listContainer.childElementCount <= 10) {
+        createItem(inputField.value);
     }
 };
 
 enterBtn.onclick = () => {
-
-    if(inputField.value.trim() !== ''){
-        if(listContainer.childElementCount <= 10){
-            createItem(inputField.value);
-        }
+    if(inputField.value.trim() !== '' && listContainer.childElementCount <= 10){
+        createItem(inputField.value);
     }
 };
-
-
-// CHECK PRIORITY
-
-let priorityCheck = () =>{
-    
-    if (inputField.value.includes(priority)) {
-
-        // DISPLAY ALERT WHEN MAXIMUM PRIORITY REACHED       
-
-        if (priorityCount < 3) return true;
-        else {
-            alert('Maximum priority limit reached');
-            return false;
-        }
-    }
-    else return false;
-    
-}
 
 
 // CREATE A LIST ITEM 
 
 function createItem(textInput){
 
+    const isPriority = textInput.includes(priority);
     textInput = textInput.replace(priority, '');
+
+    if(isPriority && priorityCount >= 3){
+        alert('Maximum priority limit reached');
+        return;
+    }
 
     if(textInput.trim() !== ''){
 
         let listItem = document.createElement('div');
         listItem.className = 'list-item' + (isPriority ? ' priority' : '');
         listItem.id = uniqueId;
-    
-        // CHANGE BG IF PRIORITY TEXT 
-    
-        isPriority = priorityCheck();
-    
-        if(isPriority){
-            listItem.style.background = '#EFC5AF';
-            listItem.classList.add('priority');
-            priorityCount++; 
-        }
-    
         let time = getTime();
-    
-        listItem.innerHTML = 
-            `<img src="img/uncheck.png" class="checkbox" alt="Image of check-box icon">
-            <p class="note-text">${textInput}</p>
-            <aside class="delete-container">
-                <img src="img/delete.png" class="delete" alt="Image of delete icon">
-                <p class="time">${time}</p>
-            </aside>`;
-    
-        listContainer.appendChild(listItem);
-    
+
+        createElement(uniqueId, textInput, time, isPriority);
         createToDoObj(uniqueId, false, textInput, time, isPriority);
     
         // RESETTING ONCE ITEM IS ADDED
     
         inputField.value = '';
         enterBtn.src = 'img/arrow-disable.png';
-        isPriority = false;
         uniqueId++;
-
+        priorityCount++;
     }
+}
+
+
+// CREATE ELEMENT
+
+function createElement(id, text, time, isPriority) {
+    const listItem = document.createElement('div');
+    listItem.className = 'list-item' + (isPriority ? ' priority' : '');
+    listItem.id = id;
+
+    listItem.innerHTML =
+        `<img src="img/uncheck.png" class="checkbox" alt="Image of check-box icon">
+        <p class="note-text">${text}</p>
+        <aside class="delete-container">
+            <img src="img/delete.png" class="delete" alt="Image of delete icon">
+            <p class="time">${time}</p>
+        </aside>`;
+
+    listContainer.appendChild(listItem);
 }
 
 
@@ -128,30 +102,19 @@ function itemClick(event){
     // CHECKBOX HANDLE
     
     if(element.matches( '.checkbox')){
-        let textContent = element.nextElementSibling;
-        let isChecked;
+        const textContent = element.nextElementSibling;
+        const isChecked = element.src.includes('img/uncheck.png') ;
 
-        if(element.src.includes('img/uncheck.png')){
-            element.src = 'img/check.png';
-            textContent.style.textDecoration = 'line-through';
-            isChecked = true;
-        }
-        else{
-            element.src = 'img/uncheck.png';
-            textContent.style.textDecoration = 'none';
-            isChecked = false;
-        }
-
+        element.src = isChecked ? 'img/check.png' : 'img/uncheck.png' ;
+        textContent.style.textDecoration =  isChecked ? 'line-through' : 'none';
         updateCheck(id, isChecked);
     }
 
     // DELETE BUTTON
 
     if(element.matches('.delete')){
-        if(element.closest('.priority')){
-            priorityCount--;
-        }
 
+        if(element.closest('.priority')) priorityCount--;
         updateDelete(id);
         listItem.remove();
     }
@@ -174,7 +137,7 @@ function getTime() {
 
     if(hours > 12){
         hours -= 12;
-        time = 'pm'
+        time = 'pm';
     } 
     if(minutes < 10) minutes = '0' + minutes;
     if(hours < 10) hours = '0' + hours;
@@ -185,18 +148,17 @@ function getTime() {
 
 // CREATE TO DO LIST
 
-function createToDoObj(uniqueId, isCheck, text, time, priority){
-    
-    let listItem = {
+function createToDoObj(uniqueId, isCheck, text, time, isPriority){
+
+    const listItem = {
         id : uniqueId,
         isChecked : isCheck,
         inputText : text,
         timing : time,
-        isPriority : priority,
+        isPriority : isPriority,
     }
 
     todoList.push(listItem);
-
     localStorage.setItem('to-do', JSON.stringify(todoList));
 }
 
@@ -206,7 +168,6 @@ function createToDoObj(uniqueId, isCheck, text, time, priority){
 function updateCheck(idName, isCheck){
     let updatedObj = findObj(parseInt(idName)); 
     updatedObj['isChecked'] = isCheck;
-
     localStorage.setItem('to-do', JSON.stringify(todoList));
 }
 
@@ -216,7 +177,6 @@ function updateCheck(idName, isCheck){
 function updateDelete(idName){
     let updatedObj = findObj(parseInt(idName));
     todoList.splice((todoList.indexOf(updatedObj)), 1);
-
     localStorage.setItem('to-do', JSON.stringify(todoList));
 }
 
@@ -240,6 +200,7 @@ function updateText(event){
         if(trimmedText === ''){
             updateDelete(listItem.id);
             listItem.remove();
+            if(listItem.matches('.priority')) priorityCount--;
         }
     }
 
@@ -255,35 +216,22 @@ let findObj = (value) => todoList.find(item => item.id === value);
 // GET CONTENT ON LOAD
 
 function onPageLoad(){
-    const todoList = JSON.parse(localStorage.getItem('to-do'));
+    const toDoSaved = JSON.parse(localStorage.getItem('to-do'));
 
-    if(todoList){
-            
-        todoList.forEach(item =>{
-            console.log(item)
+    if(toDoSaved){
+        toDoSaved.forEach(item =>{
 
-            let listItem = document.createElement('div');
-            listItem.className = 'list-item' + (isPriority ? ' priority' : '');
-            listItem.id = item.id;
+            createElement(item.id, item.inputText, item.timing, item.isPriority);
 
-            // CHANGE BG IF PRIORITY TEXT 
-            
-            if(isPriority){
-                console.log('hi')
-                listItem.style.background = '#EFC5AF';
-                listItem.classList.add('priority');
-                priorityCount++; 
+            if(item.isChecked){
+                let element = document.getElementById(`${item.id}`);
+                element.children[0].src = 'img/check.png';
+                element.children[1].style.textDecoration = 'line-through';
             }
-                    
-            listItem.innerHTML = 
-            `<img src="img/uncheck.png" class="checkbox" alt="Image of check-box icon">
-            <p class="note-text">${item.inputText}</p>
-            <aside class="delete-container">
-                <img src="img/delete.png" class="delete" alt="Image of delete icon">
-                <p class="time">${item.time}</p>
-            </aside>`;
 
-            listContainer.appendChild(listItem);
+            todoList.push(item);
+            priorityCount++;
         });
     }
 }
+
