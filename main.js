@@ -8,7 +8,6 @@ let currentDay = dayOfWeek[dateObj.getDay()];
 let inputField = document.querySelector('input');
 let enterBtn = document.querySelector('.enter')
 let listContainer = document.querySelector('.list-container')
-// let isPriority = false;
 let priorityCount = 0;
 const priority = '#priority';
 let todoList = [];
