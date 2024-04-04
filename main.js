@@ -11,7 +11,7 @@ let listContainer = document.querySelector('.list-container')
 let priorityCount = 0;
 const priority = '#priority';
 let todoList = [];
-let uniqueId = 0;
+let uniqueId = parseInt(localStorage.getItem('lastUniqueId')) || 0;
 
 dateContainer.innerText = `${currentDay} - ${currentMonth} ${date}`;
 
@@ -65,7 +65,8 @@ function createItem(textInput){
         inputField.value = '';
         enterBtn.src = 'img/arrow-disable.png';
         uniqueId++;
-        priorityCount++;
+
+        localStorage.setItem('lastUniqueId', uniqueId);
     }
 }
 
@@ -86,6 +87,7 @@ function createElement(id, text, time, isPriority) {
         </aside>`;
 
     listContainer.appendChild(listItem);
+    if(isPriority) priorityCount++;
 }
 
 
@@ -229,7 +231,6 @@ function onPageLoad(){
             }
 
             todoList.push(item);
-            priorityCount++;
         });
     }
 }
