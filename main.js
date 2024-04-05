@@ -50,24 +50,27 @@ function createItem(textInput){
         return;
     }
 
-    if(textInput.trim() !== ''){
+    // INCASE OF EMPTY LIST AFTER REPLACING PRIORITY
 
-        let listItem = document.createElement('div');
-        listItem.className = 'list-item' + (isPriority ? ' priority' : '');
-        listItem.id = uniqueId;
-        let time = getTime();
-
-        createElement(uniqueId, textInput, time, isPriority);
-        createToDoObj(uniqueId, false, textInput, time, isPriority);
-    
-        // RESETTING ONCE ITEM IS ADDED
-    
-        inputField.value = '';
-        enterBtn.src = 'img/arrow-disable.png';
-        uniqueId++;
-
-        localStorage.setItem('lastUniqueId', uniqueId);
+    if(textInput.trim() === ''){
+        return;
     }
+
+    let listItem = document.createElement('div');
+    listItem.className = 'list-item' + (isPriority ? ' priority' : '');
+    listItem.id = uniqueId;
+    let time = getTime();
+
+    createElement(uniqueId, textInput, time, isPriority);
+    createToDoObj(uniqueId, false, textInput, time, isPriority);
+
+    // RESETTING ONCE ITEM IS ADDED
+
+    inputField.value = '';
+    enterBtn.src = 'img/arrow-disable.png';
+    uniqueId++;
+
+    localStorage.setItem('lastUniqueId', uniqueId);
 }
 
 
